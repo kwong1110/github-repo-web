@@ -1,8 +1,4 @@
-'use client';
-
-import { ArrowLeft } from 'lucide-react';
-import { Button } from './ui/Button';
-import { Card, CardDescription, CardHeader, CardTitle } from './ui/card';
+import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface SearchResult {
   id: number;
@@ -12,27 +8,18 @@ interface SearchResult {
 
 interface SearchResultsProps {
   results: SearchResult[];
-  onResetAction: () => void;
+  query: string;
 }
 
-export function SearchResults({ results, onResetAction }: SearchResultsProps) {
+export function SearchResults({ results, query }: SearchResultsProps) {
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">검색 결과</h2>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onResetAction}
-          className="flex items-center gap-1"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          <span>돌아가기</span>
-        </Button>
-      </div>
+      <h2 className="text-xl font-medium">
+        Search results for: <span className="font-bold">{query}</span>
+      </h2>
 
       {results.length === 0 ? (
-        <p className="text-center py-8 text-muted-foreground">검색 결과가 없습니다.</p>
+        <p className="text-muted-foreground">검색 결과가 없습니다.</p>
       ) : (
         <div className="space-y-3">
           {results.map((result) => (

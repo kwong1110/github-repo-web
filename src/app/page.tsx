@@ -1,105 +1,58 @@
 'use client';
 
 import { LanguageSelector } from '@/components/language-selector';
+import { SearchInput } from '@/components/search-input';
 import { SearchResults } from '@/components/search-results';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { LoaderCircle, Search } from 'lucide-react';
 import Image from 'next/image';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 export default function Home() {
-  const [query, setQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
-  const [showResults, setShowResults] = useState(false);
-  const [results, setResults] = useState<any[]>([]);
-  const [mounted, setMounted] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [hasSearched, setHasSearched] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  // Mock
+  const searchResults = [
+    { id: 1, title: '제목 1', description: '1 요약' },
+    { id: 2, title: '제목 2', description: '2 요약' },
+    { id: 3, title: '제목 3', description: '3 요약' },
+    { id: 4, title: '제목 4', description: '4 요약' },
+    { id: 5, title: '제목 5', description: '5 요약' },
+  ];
 
-  const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!query.trim()) return;
-
+  const handleSearch = async (query: string) => {
     setIsSearching(true);
+    setSearchQuery(query);
 
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 1500));
 
-      const mockResults = [
-        { id: 1, title: '검색 결과 1', description: '첫 번째 검색 결과에 대한 설명입니다.' },
-        { id: 2, title: '검색 결과 2', description: '두 번째 검색 결과에 대한 설명입니다.' },
-        { id: 3, title: '검색 결과 3', description: '세 번째 검색 결과에 대한 설명입니다.' },
-        { id: 4, title: '검색 결과 4', description: '네 번째 검색 결과에 대한 설명입니다.' },
-        { id: 5, title: '검색 결과 5', description: '다섯 번째 검색 결과에 대한 설명입니다.' },
-      ];
-
-      setResults(mockResults);
-      setShowResults(true);
-    } catch (error) {
-      console.error('Search failed:', error);
-    } finally {
-      setIsSearching(false);
-    }
+    setIsSearching(false);
+    setHasSearched(true);
   };
-
-  const resetSearch = () => {
-    setShowResults(false);
-    setQuery('');
-    setResults([]);
-  };
-
-  if (!mounted) {
-    return null;
-  }
 
   return (
     <main className="flex min-h-screen flex-col items-center p-4 transition-all duration-500 ease-in-out justify-between">
       {/* 우측 상단 컨트롤 */}
-      <div className="fixed top-4 right-4 flex items-center gap-2 z-10">
-        <LanguageSelector />
+      <div className="absolute top-4 right-4 flex items-center gap-2">
         <ThemeToggle />
+        <LanguageSelector />
       </div>
 
       <div
-        className={`w-full max-w-3xl transition-all duration-500 ease-in-out min-h-[75vh] ${
-          showResults ? 'mt-12' : 'flex items-center justify-center'
+        className={`w-full transition-all duration-500 ease-in-out ${
+          hasSearched ? 'pt-24' : 'flex items-center justify-center min-h-screen'
         }`}
       >
-        <form
-          onSubmit={handleSearch}
-          className="relative w-full transition-all duration-500 ease-in-out"
-        >
-          <div className="relative">
-            <Input
-              type="text"
-              placeholder="검색어를 입력하세요..."
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              disabled={isSearching}
-              className="pr-20 h-14 text-lg"
-            />
+        <div className="w-full max-w-2xl mx-auto px-4">
+          <SearchInput onSearchAction={handleSearch} isSearching={isSearching} />
 
-            <Button type="submit" disabled={isSearching} className="absolute right-0 top-0 h-full">
-              {isSearching ? (
-                <LoaderCircle className="animate-spin" />
-              ) : (
-                <Search className="h-5 w-5" />
-              )}
-              <span className="sr-only">검색</span>
-            </Button>
-          </div>
-        </form>
-
-        {showResults && (
-          <div className="mt-8 animate-fadeIn">
-            <SearchResults results={results} onResetAction={resetSearch} />
-          </div>
-        )}
+          {hasSearched && (
+            <div className="mt-8 animate-fadeIn">
+              <SearchResults results={searchResults} query={searchQuery} />
+            </div>
+          )}
+        </div>
       </div>
 
       <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
