@@ -4,32 +4,45 @@ import { LanguageSelector } from '@/components/language-selector';
 import { SearchInput } from '@/components/search-input';
 import { SearchResults } from '@/components/search-results';
 import { ThemeToggle } from '@/components/theme-toggle';
+import axiosInstance from '@/lib/axiosInstance';
+import { Repo } from '@/types/api';
+import { useQuery } from '@tanstack/react-query';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+
+const USER_NAME_PARAM = 'userName';
+
+const getUsersRepos = async (userName: string) => {
+  const { data } = await axiosInstance.get<Repo[]>(`users/${userName}/repos`, {
+    params: {
+      per_page: 5,
+      page: 1,
+    },
+  });
+  return data;
+};
 
 export default function Home() {
-  const [isSearching, setIsSearching] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [hasSearched, setHasSearched] = useState(false);
+  const searchParams = useSearchParams();
+  const router = useRouter();
 
-  // Mock
-  const searchResults = [
-    { id: 1, title: '제목 1', description: '1 요약' },
-    { id: 2, title: '제목 2', description: '2 요약' },
-    { id: 3, title: '제목 3', description: '3 요약' },
-    { id: 4, title: '제목 4', description: '4 요약' },
-    { id: 5, title: '제목 5', description: '5 요약' },
-  ];
-
-  const handleSearch = async (query: string) => {
-    setIsSearching(true);
-    setSearchQuery(query);
-
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-
-    setIsSearching(false);
-    setHasSearched(true);
+  const handleSearch = async (userName: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set(USER_NAME_PARAM, userName);
+    if (!userName) {
+      router.replace('/');
+      return;
+    }
+    router.replace(`?${params.toString()}`);
   };
+
+  const { data, error, isPending } = useQuery({
+    queryKey: ['usersRepos', searchParams.get(USER_NAME_PARAM) ?? ''],
+    queryFn: () => getUsersRepos(searchParams.get(USER_NAME_PARAM) ?? ''),
+    enabled: !!searchParams.get(USER_NAME_PARAM),
+  });
+
+  const hasSearched = data && data?.length > -1;
 
   return (
     <main className="flex min-h-screen flex-col items-center p-4 transition-all duration-500 ease-in-out justify-between">
@@ -45,13 +58,17 @@ export default function Home() {
         }`}
       >
         <div className="w-full max-w-2xl mx-auto px-4">
-          <SearchInput onSearchAction={handleSearch} isSearching={isSearching} />
+          <SearchInput
+            onSearchAction={handleSearch}
+            isSearching={!!searchParams.get(USER_NAME_PARAM) && isPending}
+          />
 
-          {hasSearched && (
+          {!error && hasSearched && (
             <div className="mt-8 animate-fadeIn">
-              <SearchResults results={searchResults} query={searchQuery} />
+              <SearchResults results={data} query={searchParams.get(USER_NAME_PARAM) ?? ''} />
             </div>
           )}
+          {error && <div className="mt-8">오류 발생</div>}
         </div>
       </div>
 

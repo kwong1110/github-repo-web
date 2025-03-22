@@ -1,13 +1,10 @@
-import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-
-interface SearchResult {
-  id: number;
-  title: string;
-  description: string;
-}
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { convertToKoreanDate } from '@/lib/dateUtils';
+import { Repo } from '@/types/api';
+import { Star } from 'lucide-react';
 
 interface SearchResultsProps {
-  results: SearchResult[];
+  results: Repo[];
   query: string;
 }
 
@@ -25,8 +22,17 @@ export function SearchResults({ results, query }: SearchResultsProps) {
           {results.map((result) => (
             <Card key={result.id} className="transition-all hover:shadow-md">
               <CardHeader className="py-4">
-                <CardTitle>{result.title}</CardTitle>
-                <CardDescription>{result.description}</CardDescription>
+                <CardTitle className="flex justify-between">
+                  {result.name}
+                  <div className="flex items-center text-sm">
+                    <Star size={16} fill="yellow" />
+                    {result.stargazers_count}
+                  </div>
+                </CardTitle>
+                <CardDescription className="flex">{result.description}</CardDescription>
+                <CardContent>
+                  {convertToKoreanDate(result.updated_at)}, {result.language}
+                </CardContent>
               </CardHeader>
             </Card>
           ))}

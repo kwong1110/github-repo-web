@@ -25,7 +25,7 @@ export function SearchInput({ onSearchAction, isSearching }: SearchInputProps) {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (query.trim() && !isSearching) {
+    if (!isSearching) {
       onSearchAction(query);
     }
   };
